@@ -22,6 +22,9 @@ namespace Vidyasetu_API.DTOs
         [JsonPropertyName("source")]
         public string Source { get; set; } = default!;
 
+        [JsonPropertyName("question_type")]
+        public string QuestionType { get; set; } = default!;
+
         [JsonPropertyName("num_questions")]
         public int NumQuestions { get; set; }
 
