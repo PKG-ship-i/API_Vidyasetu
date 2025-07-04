@@ -30,7 +30,7 @@ namespace VidyasetuAPI.Controllers
 
 
 
-		#region Generte Response From video url 
+        #region Generte Response From video url 
 
 
         [HttpPost("GenrateQuestionnaireFromVideoURL")]
@@ -38,11 +38,11 @@ namespace VidyasetuAPI.Controllers
         {
             try
             {
-                  var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
+                var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
 
-                  if (device == null)
+                if (device == null)
                     return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device or", 401));
-                    int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
+                int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
 
 
                 if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]) && device.UserId == null)
@@ -119,12 +119,12 @@ namespace VidyasetuAPI.Controllers
 
                 return StatusCode(300, ApiResponse<GeneratedQuestionResponse>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
             }
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
-				return StatusCode(500, ApiResponse<string>.CreateFailure("Internal server error"));
-			}
-		}
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
+                return StatusCode(500, ApiResponse<string>.CreateFailure("Internal server error"));
+            }
+        }
 
 
 
@@ -207,10 +207,10 @@ namespace VidyasetuAPI.Controllers
         }
 
 
-		#endregion
+        #endregion
 
-		#region Helper 
-		private async Task<QuestionnaireResponseModel?> GenerateQuizAsync(GenerateQuizRequest requestModel, long RequestId)
+        #region Helper 
+        private async Task<QuestionnaireResponseModel?> GenerateQuizAsync(GenerateQuizRequest requestModel, long RequestId)
         {
             try
             {
@@ -238,17 +238,15 @@ namespace VidyasetuAPI.Controllers
                 _db.UserRequestResponses.Add(responseEntity);
                 await _db.SaveChangesAsync();
 
-                    var result = JsonSerializer.Deserialize<QuestionnaireResponseModel>(
-                        responseBody,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
+                var result = JsonSerializer.Deserialize<QuestionnaireResponseModel>(
+                    responseBody,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
-                    return result;
-                }
+                return result;
 
-                return null;
 
             }
 
@@ -257,7 +255,7 @@ namespace VidyasetuAPI.Controllers
                 Console.WriteLine($"Error in GenerateQuizAsync: {ex.Message}");
                 throw;
             }
-           
+
         }
         #endregion
 
