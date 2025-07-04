@@ -26,7 +26,7 @@ namespace VidyasetuAPI.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> Signup([FromBody] SignupDto dto)
 		{
-			if (_db.Users.Any(u => u.Email == dto.Email))
+			if (_db.Users.Any(u => u.Email == dto.Email || u.Mobile == dto.Mobile))
 				return BadRequest("User already exists");
 
 			var user = new User
@@ -47,10 +47,15 @@ namespace VidyasetuAPI.Controllers
 
 			var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.Id == dto.DeviceId);
 			existingDevice!.UserId = user.Id;
-
+            _db.DeviceDetails.Update(existingDevice);
+			await _db.SaveChangesAsync();
 			var token = _authService.GenerateToken(user, existingDevice.Id);
-
-			return Ok(new { token });
+			var obj = new
+			{
+				Token = token,
+				userDetails = user,
+            };
+			return Ok(new {obj});
 		}
 
 		[HttpPost("login")]
@@ -65,12 +70,47 @@ namespace VidyasetuAPI.Controllers
 			if(device == null)
 			return Unauthorized("Unauthorized Device");
 
-			var token = _authService.GenerateToken(user,device.Id);
-			return Ok(new { token });
+			var token = _authService.GenerateToken(user, device.Id);
+            var obj = new
+            {
+                Token = token,
+                userDetails = user,
+            };
+            return Ok(new { obj });
 		}
 
 
-		[HttpGet("whoami")]
+        [HttpPost("device-register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterDevice([FromBody] RegisterDeviceDto dto)
+        {
+            var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(d => d.DeviceIdentifier == dto.DeviceIdentifier || d.DeviceToken == dto.DeviceToken);
+
+            if (existingDevice != null)
+
+                return Ok(existingDevice);
+
+            var device = new DeviceDetail
+
+            {
+
+                DeviceIdentifier = dto.DeviceIdentifier,
+
+                DeviceToken = dto.DeviceToken
+
+            };
+
+            _db.DeviceDetails.Add(device);
+
+            await _db.SaveChangesAsync();
+
+            return Ok(device);
+
+        }
+
+
+
+        [HttpGet("whoami")]
         [Authorize]
         public IActionResult WhoAmI()
 		{

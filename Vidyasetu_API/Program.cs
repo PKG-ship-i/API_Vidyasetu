@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -9,6 +9,17 @@ using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowFrontend", policy =>
+	{
+		policy.AllowAnyOrigin()//WithOrigins("http://localhost:3000") // 👈 Your frontend URL
+			  .AllowAnyHeader()
+			  .AllowAnyMethod();
+		//.AllowCredentials(); // 👈 Only if you're using cookies/auth
+	});
+});
 
 // Bind Jwt section to JwtSettings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -27,21 +38,21 @@ builder.Services.AddScoped<HelperService>();
 // Add JWT authentication
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtIssuer,
-        ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-    };
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = jwtIssuer,
+		ValidAudience = jwtAudience,
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+	};
 });
 
 builder.Services.AddAuthorization();
@@ -55,11 +66,11 @@ builder.Services.AddCustomSwagger();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
