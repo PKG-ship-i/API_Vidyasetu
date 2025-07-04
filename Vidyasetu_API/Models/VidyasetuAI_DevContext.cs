@@ -143,6 +143,9 @@ public partial class VidyasetuAI_DevContext : DbContext
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_date");
+            entity.Property(e => e.DeviceId)
+                .HasMaxLength(100)
+                .HasColumnName("device_id");
             entity.Property(e => e.Nickname)
                 .IsRequired()
                 .HasMaxLength(50)

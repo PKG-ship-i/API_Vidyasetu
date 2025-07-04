@@ -32,4 +32,6 @@ public partial class QuizParticipant
     public long? UpdatedBy { get; set; }
 
     public DateTime? UpdatedDate { get; set; }
+
+    public string DeviceId { get; set; }
 }
