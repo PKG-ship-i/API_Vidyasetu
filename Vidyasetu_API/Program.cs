@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Vidyasetu_API;
+using Vidyasetu_API.Common;
 using Vidyasetu_API.Extensions;
 using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
@@ -21,6 +22,7 @@ var jwtAudience = jwtSection.GetValue<string>("Audience");
 builder.Services.AddDbContext<VidyasetuAI_DevContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<HelperService>();
 
 // Add JWT authentication
 builder.Services.AddAuthentication(options =>
