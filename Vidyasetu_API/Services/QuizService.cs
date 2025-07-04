@@ -41,6 +41,81 @@ namespace Vidyasetu_API.Services
 				.SendAsync("UpdateLeaderboard", leaderboard);
 		}
 
+		public async Task SubmitLiveAnswersAsync(string shareCode, SubmitQuizAnswersRequest request)
+		{
+			// 1. Get the quiz session by share code
+			var session = await _db.SharedQuizSessions
+				.FirstOrDefaultAsync(s => s.ShareCode == shareCode && s.ActiveFlag == true);
+
+			if (session == null)
+				throw new Exception("Invalid quiz link.");
+
+			// 2. Get the participant
+			var participant = await _db.QuizParticipants
+				.FirstOrDefaultAsync(p => p.Id == request.ParticipantId && p.SessionId == session.Id);
+
+			if (participant == null)
+				throw new Exception("Participant not found for this quiz.");
+
+			if (participant.SubmittedAt != null)
+				throw new Exception("You have already submitted this quiz.");
+
+			// 3. Get original quiz questions
+			var quizJson = await _db.UserRequestResponses
+				.Where(r => r.RequestId == session.RequestId)
+				.Select(r => r.QuestionJson)
+				.FirstOrDefaultAsync();
+
+			if (string.IsNullOrEmpty(quizJson))
+				throw new Exception("Quiz questions not found.");
+
+			var quiz = JsonConvert.DeserializeObject<QuestionnaireResponseModel>(quizJson);
+			if (quiz == null || quiz.Questions == null || quiz.Questions.Count == 0)
+				throw new Exception("Invalid quiz data.");
+
+			// 4. Compare answers and compute score
+			int totalQuestions = quiz.Questions.Count;
+			int correctCount = 0;
+
+			var answerEntities = new List<ParticipantAnswer>();
+
+			foreach (var submitted in request.Answers)
+			{
+				var original = quiz.Questions.FirstOrDefault(q => q.Id == submitted.QuestionId);
+				if (original == null) continue;
+
+				bool isCorrect = string.Equals(submitted.SelectedOption?.Trim(), original.CorrectAnswer?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+				if (isCorrect) correctCount++;
+
+				answerEntities.Add(new ParticipantAnswer
+				{
+					ParticipantId = participant.Id,
+					QuestionId = submitted.QuestionId,
+					SelectedOption = submitted.SelectedOption,
+					IsCorrect = isCorrect
+				});
+			}
+
+			// 5. Save answers
+			await _db.ParticipantAnswers.AddRangeAsync(answerEntities);
+
+			// 6. Update participant with score
+			participant.Score = correctCount;
+			participant.TotalQuestions = totalQuestions;
+			participant.Percentage = Math.Round((decimal)correctCount / totalQuestions * 100, 2);
+			participant.SubmittedAt = DateTime.UtcNow;
+
+			_db.QuizParticipants.Update(participant);
+			await _db.SaveChangesAsync();
+
+			// 7. Broadcast leaderboard update via SignalR
+			var leaderboard = await GetLeaderboardAsync(shareCode);
+			await _hubContext.Clients.Group(shareCode)
+				.SendAsync("UpdateLeaderboard", leaderboard);
+		}
+
+
 		public async Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(string shareCode)
 		{
 			// Query DB: Load participants from `quiz_participants`

@@ -3,6 +3,7 @@
 	public class SubmitQuizAnswersRequest
 	{
 		public string Nickname { get; set; } = default!;
+		public long ParticipantId { get; set; }
 		public List<SubmittedAnswer> Answers { get; set; } = new();
 	}
 

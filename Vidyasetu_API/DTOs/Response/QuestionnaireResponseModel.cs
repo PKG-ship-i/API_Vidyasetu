@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Vidyasetu_API.DTOs.Response
 {
@@ -14,7 +15,10 @@ namespace Vidyasetu_API.DTOs.Response
 
     public class Question
     {
-        [JsonPropertyName("question_text")]
+		[JsonProperty("id")] // for Newtonsoft.Json
+		public string Id { get; set; } = string.Empty;
+
+		[JsonPropertyName("question_text")]
         public string QuestionText { get; set; } = default!;
 
         public List<string> Options { get; set; } = default!;
