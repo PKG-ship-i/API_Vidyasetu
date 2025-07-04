@@ -1,4 +1,6 @@
-﻿namespace Vidyasetu_API.Models
+﻿using Vidyasetu_API.DTOs.Response;
+
+namespace Vidyasetu_API.Models
 {
     public class QuizEvaluationResponse
     {
@@ -7,7 +9,10 @@
         public double ScorePercentage { get; set; }
         public string Result { get; set; } = string.Empty; // "Pass" or "Fail"
         public string Medal { get; set; } = string.Empty; // "Gold", "Silver", "Bronze", etc.
-
+        public string VideoUrl { get; set; } = string.Empty;
+        public string TotalTimeTaken { get; set; } = string.Empty;
+        public string Summary { get; set; } = default!;
+        public List<Flashcard>? Flashcards { get; set; } = default!;
         public List<IncorrectQuestionDetail> IncorrectQuestions { get; set; } = new();
     }
 

@@ -38,7 +38,7 @@ namespace VidyasetuAPI.Controllers
         {
             try
             {
-                var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
+                  var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
 
                   if (device == null)
                     return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device or", 401));
@@ -104,7 +104,6 @@ namespace VidyasetuAPI.Controllers
 
                         var getUserResponse = await _db.UserRequestResponses
                             .FirstOrDefaultAsync(x => x.RequestId == addedLog.Id);
-
                         var response = new GeneratedQuestionResponse()
                         {
                             token = EncryptDecryptHelper.Encrypt(getUserResponse!.Id.ToString(), dto.DeviceId.ToString()),
@@ -117,7 +116,6 @@ namespace VidyasetuAPI.Controllers
                     return StatusCode(500, ApiResponse<string>.CreateFailure("Irrelvant content or server error"));
 
                 }
-
 
                 return StatusCode(300, ApiResponse<GeneratedQuestionResponse>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
             }
@@ -188,11 +186,10 @@ namespace VidyasetuAPI.Controllers
                 if (result != null)
                 {
                     var getUserResponse = await _db.UserRequestResponses
-                          .FirstOrDefaultAsync(x => x.RequestId == addedLog.Id);
-
+                           .FirstOrDefaultAsync(x => x.RequestId == addedLog.Id);
                     var response = new GeneratedQuestionResponse()
                     {
-                        token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
+                        token = EncryptDecryptHelper.Encrypt(getUserResponse!.Id.ToString(), dto.DeviceId.ToString()),
                         questionnaireResponseModel = result!
                     };
                     return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response!, "Questionnaire generated successfully"));
