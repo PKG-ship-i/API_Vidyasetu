@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -9,6 +9,17 @@ using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowFrontend", policy =>
+	{
+		policy.AllowAnyOrigin()//WithOrigins("http://localhost:3000") // 👈 Your frontend URL
+			  .AllowAnyHeader()
+			  .AllowAnyMethod();
+		//.AllowCredentials(); // 👈 Only if you're using cookies/auth
+	});
+});
 
 // Bind Jwt section to JwtSettings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -59,6 +70,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
