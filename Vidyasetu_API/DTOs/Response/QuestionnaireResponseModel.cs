@@ -9,7 +9,7 @@ namespace Vidyasetu_API.DTOs.Response
         public string Summary { get; set; } = default!;
         public List<Flashcard>? Flashcards { get; set; } = default!;
 
-        public List<Recommendations>? Recommendations { get; set; } = default!;
+        public List<Recommendation>? Recommendations { get; set; } = default!;
     }
 
     public class Question
@@ -33,11 +33,12 @@ namespace Vidyasetu_API.DTOs.Response
         public string Answer { get; set; } = default!;
     }
 
-    public class Recommendations
+    public class Recommendation
     {
         public string Title { get; set; } = string.Empty;
         public string VideoId { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
+        public string Thumbnail { get; set; } = string.Empty;
     }
 
 }

@@ -128,10 +128,14 @@ namespace Vidyasetu_API.Controllers
                     : new List<Flashcard>(),
                 Summary = userResponse.SummaryJson ?? string.Empty,
                 IncorrectQuestions = incorrectList,
+                CorrectQuestions = correctList,
                 VideoUrl = logdeviceRequest?.RequestUrl ?? string.Empty,
                 Recommendations = userResponse.RecommendationsJson != null
-                    ? JsonSerializer.Deserialize<List<Recommendations>>(userResponse.RecommendationsJson)
-                    : new List<Recommendations>()
+                    ? JsonSerializer.Deserialize<List<Recommendation>>(userResponse.RecommendationsJson, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    })
+                    : new List<Recommendation>()
             };
 
             return Ok(ApiResponse<QuizEvaluationResponse>.CreateSuccess(response, "QuizEvaluation done successfully!"));
