@@ -38,8 +38,15 @@ namespace VidyasetuAPI.Controllers
         {
             try
             {
-                if (!await _helperService.IsDeviceAllowedAsync(dto.DeviceId))
-                    return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device", 401));
+                var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
+
+                  if (device == null)
+                    return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device or", 401));
+                    int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
+
+
+                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
+                    return StatusCode(302, ApiResponse<string>.CreateFailure("you have exceded the limit of free access, please do login or signup for further process"));
 
                 if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
                     return BadRequest(ApiResponse<string>.CreateFailure("Only YouTube source is supported", 400));
@@ -109,8 +116,20 @@ namespace VidyasetuAPI.Controllers
         {
             try
             {
-                if (!await _helperService.IsDeviceAllowedAsync(dto.DeviceId))
-                    return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device", 401));
+                var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
+
+                  if (device == null)
+                    return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device or", 401));
+                int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
+
+
+                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
+                    return StatusCode(302, ApiResponse<string>.CreateFailure("you have exceded the limit of free access, please do login or signup for further process"));
+
+                if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
+                    return BadRequest(ApiResponse<string>.CreateFailure("Only YouTube source is supported", 400));
+
+
 
                 if (!dto.SourceTypeId.Equals((int)SourceType.Prompt))
                     return BadRequest(ApiResponse<string>.CreateFailure("Only Prompt source is supported", 400));

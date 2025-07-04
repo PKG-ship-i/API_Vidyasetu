@@ -17,26 +17,16 @@ namespace Vidyasetu_API.Common
             _db = db;
             _config = config;
         }
-        public async Task<bool> IsDeviceAllowedAsync(long deviceId)
+        public async Task<DeviceDetail?> IsDeviceAllowedAsync(long deviceId)
         {
             // Step 1: Check if device has >= 3 logs
-            int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == deviceId);
 
             // Step 2: Get the device and its associated user
-            var device = await _db.DeviceDetails
+            return await _db.DeviceDetails
                 .Where(d => d.Id == deviceId)
                 .FirstOrDefaultAsync();
 
-            if (device == null)
-                return false; // Device not found - deny access
-
-            if (device.UserId != null)
-                return true; // User is associated with the device - allow acces
-
-            if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
-                return false; // No user, and already 3+ logs - deny access
-
-            return true; // Less than 3 logs - allow
+          
         }
 
         public async Task<DeviceLogDetail> AddNewDevicelog(DeviceLogDetail deviceLogDetail)
