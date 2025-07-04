@@ -215,12 +215,12 @@ namespace VidyasetuAPI.Controllers
                     RequestId = RequestId,
                     QuestionJson = JsonSerializer.Serialize(parsed?.Questions),
                     FlashcardJson = JsonSerializer.Serialize(parsed?.Flashcards),
-                    SummaryJson = JsonSerializer.Serialize(parsed?.Summary)
+                    SummaryJson = JsonSerializer.Serialize(parsed?.Summary),
+                    RecommendationsJson = JsonSerializer.Serialize(parsed?.Recommendations),
                 };
 
                 _db.UserRequestResponses.Add(responseEntity);
                 await _db.SaveChangesAsync();
-                /// Need to insert into the database for QuestionRequetResponse
 
                 var result = JsonSerializer.Deserialize<QuestionnaireResponseModel>(
                     responseBody,
@@ -235,7 +235,7 @@ namespace VidyasetuAPI.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GenerateQuizAsync: {ex.Message}");
-                throw; // Re-throw the exception to be handled by global exception handler
+                throw;
             }
            
         }

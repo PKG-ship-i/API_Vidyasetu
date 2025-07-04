@@ -16,4 +16,6 @@ public partial class UserRequestResponse
     public string FlashcardJson { get; set; }
 
     public string SummaryJson { get; set; }
+
+    public string RecommendationsJson { get; set; }
 }

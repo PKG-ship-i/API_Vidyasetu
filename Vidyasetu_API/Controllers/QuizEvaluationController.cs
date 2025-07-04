@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vidyasetu_API.Models;
 using Microsoft.EntityFrameworkCore;
 using Azure.Core;
+using Vidyasetu_API.Common;
 
 namespace Vidyasetu_API.Controllers
 {
@@ -113,7 +114,7 @@ namespace Vidyasetu_API.Controllers
                 IncorrectQuestions = incorrectList
             };
 
-            return Ok(response);
+            return Ok(ApiResponse<QuizEvaluationResponse>.CreateSuccess(response, "QuizEvaluation done successfully!"));
         }
     }
 }
