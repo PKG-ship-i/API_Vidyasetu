@@ -45,7 +45,7 @@ namespace VidyasetuAPI.Controllers
                     int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
 
 
-                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
+                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]) && device.UserId == null)
                     return StatusCode(302, ApiResponse<string>.CreateFailure("you have exceded the limit of free access, please do login or signup for further process"));
 
                 if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
@@ -123,7 +123,7 @@ namespace VidyasetuAPI.Controllers
                 int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
 
 
-                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
+                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]) && device.UserId == null)
                     return StatusCode(302, ApiResponse<string>.CreateFailure("you have exceded the limit of free access, please do login or signup for further process"));
 
                 if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
