@@ -81,6 +81,7 @@ namespace VidyasetuAPI.Controllers
                         SourceType = _helperService.GetDescriptionFromValue<SourceType>(dto.SourceTypeId),
                         Source = dto.VideoUrl,
                         NumQuestions = dto.NumberOfQuestions,
+                        QuestionType = _helperService.GetDescriptionFromValue<QuestionType>(dto.QuestionsTypeId), 
                         Difficulty = _helperService.GetDescriptionFromValue<DifficultyLevel>(dto.DifficultyTypeId),
                         PreviousQuestions = [],
                         QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId)
@@ -143,9 +144,8 @@ namespace VidyasetuAPI.Controllers
                         NumQuestions = dto.NumberOfQuestions,
                         Difficulty = _helperService.GetDescriptionFromValue<DifficultyLevel>(dto.DifficultyTypeId),
                         PreviousQuestions = [],
-                        QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId)
-
-                        //QuestionTypeId = dto.QuestionsTypeId!,
+                        QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId),
+                        QuestionType = _helperService.GetDescriptionFromValue<QuestionType>(dto.QuestionsTypeId),
                     };
 
                 var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
