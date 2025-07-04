@@ -47,6 +47,8 @@ namespace VidyasetuAPI.Controllers
 
 			var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.Id == dto.DeviceId);
 			existingDevice!.UserId = user.Id;
+            _db.DeviceDetails.Update(existingDevice);
+			await _db.SaveChangesAsync();
 
 			var token = _authService.GenerateToken(user, existingDevice.Id);
 
