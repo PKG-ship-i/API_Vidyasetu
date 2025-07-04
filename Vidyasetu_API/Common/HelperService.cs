@@ -1,6 +1,8 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using Vidyasetu_API.DTOs.Response;
 using Vidyasetu_API.Models;
 
 namespace Vidyasetu_API.Common
@@ -45,7 +47,70 @@ namespace Vidyasetu_API.Common
         }
 
 
-        public  string GetDescriptionFromValue<TEnum>(int value) where TEnum : Enum
+
+        public async Task<UserRequestPreference> AddUserPreference(UserRequestPreference userRequestPreference)
+        {
+            await _db.UserRequestPreferences.AddAsync(userRequestPreference);
+            await _db.SaveChangesAsync();
+            return userRequestPreference;
+        }
+        public async Task<QuestionnaireResponseModel?> IsRequestExist(
+            int numberOfQuestion,
+            int sourceTypeId,
+            int diffcultyTypeId,
+            int questionTypeId,
+            string sourceUrl)
+        {
+            var response = new QuestionnaireResponseModel();
+
+            // Get the matching UserRequestPreference ID based on DeviceLogDetails filter
+            var matchingId = await _db.DeviceLogDetails
+                .Where(x => x.RequestUrl == sourceUrl && x.SourceTypeId == sourceTypeId)
+                .SelectMany(x => x.UserRequestPreferences)
+                .Where(y => y.NumberOfQuestions == numberOfQuestion
+                         && y.DifficultyTypeId == diffcultyTypeId
+                         && y.QuestionsTypeId == questionTypeId)
+                .Select(x => x.RequestId)
+                .FirstOrDefaultAsync();
+
+            if (matchingId == 0)
+                return null;
+
+            // Get existing user request response based on RequestId
+            var existingRequest = await _db.UserRequestResponses
+                .FirstOrDefaultAsync(x => x.RequestId == matchingId);
+
+            if (existingRequest == null)
+                return null;
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            // Deserialize Questions if available
+            if (!string.IsNullOrWhiteSpace(existingRequest.QuestionJson))
+            {
+                response.Questions = JsonSerializer.Deserialize<List<Question>>(existingRequest.QuestionJson, options);
+            }
+
+            // Set Summary string directly
+            if (!string.IsNullOrWhiteSpace(existingRequest.SummaryJson))
+            {
+                response.Summary = existingRequest.SummaryJson;
+            }
+
+            // Deserialize Flashcards if available
+            if (!string.IsNullOrWhiteSpace(existingRequest.FlashcardJson))
+            {
+                response.Flashcards = JsonSerializer.Deserialize<List<Flashcard>>(existingRequest.FlashcardJson, options);
+            }
+
+            return response;
+        }
+
+
+        public string GetDescriptionFromValue<TEnum>(int value) where TEnum : Enum
         {
             var enumValue = (TEnum)Enum.ToObject(typeof(TEnum), value);
             var memberInfo = typeof(TEnum).GetMember(enumValue.ToString());
@@ -58,6 +123,9 @@ namespace Vidyasetu_API.Common
 
             return enumValue.ToString();
         }
+
+
+
 
     }
 }

@@ -32,119 +32,109 @@ namespace VidyasetuAPI.Controllers
 		#region Generte Response From video url 
 
 
-		[HttpPost("GenrateQuestionnaireFromVideoURL")]
-		public async Task<IActionResult> GenrateQuestionnaireFromVideoURL([FromBody] GenerateVideoRequestModel dto)
-		{
-			try
-			{
-				if (!await _helperService.IsDeviceAllowedAsync(dto.DeviceId))
-					return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device", 401));
-
-				if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
-					return BadRequest(ApiResponse<string>.CreateFailure("Only YouTube source is supported", 400));
-
-				var addedLog = await _helperService.AddNewDevicelog(new DeviceLogDetail
-				{
-					DeviceId = dto.DeviceId,
-					SourceTypeId = dto.SourceTypeId,
-					RequestUrl = dto.VideoUrl,
-					ActiveFlag = true,
-					CreatedDate = DateTime.UtcNow,
-					CreatedBy = 0
-				});
-
-				var createQuizRequest = new GenerateQuizRequest
-				{
-					SourceType = _helperService.GetDescriptionFromValue<SourceType>(dto.SourceTypeId),
-					Source = dto.VideoUrl,
-					NumQuestions = dto.NumberOfQuestions,
-					Difficulty = _helperService.GetDescriptionFromValue<DifficultyLevel>(dto.DifficultyTypeId),
-					PreviousQuestions = [],
-					QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId)
-				};
-
-				var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
-
-				return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result, "Questionnaire generated successfully"));
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
-				return StatusCode(500, ApiResponse<string>.CreateFailure("Internal server error"));
-			}
-		}
-
-
-
-
-        [HttpPost("GenrateQuestionnaireFromContext")]
-        public async Task<QuestionnaireResponseModel?> GenrateQuestionnaireFromContext([FromBody] GenerateContextRequestModel dto)
+        [HttpPost("GenrateQuestionnaireFromVideoURL")]
+        public async Task<IActionResult> GenrateQuestionnaireFromVideoURL([FromBody] GenerateVideoRequestModel dto)
         {
             try
             {
-                var responnse = new QuestionnaireResponseModel();
-                var IsvalidDevice = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
+                if (!await _helperService.IsDeviceAllowedAsync(dto.DeviceId))
+                    return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device", 401));
 
-                if (IsvalidDevice && dto.SourceTypeId.Equals(SourceType.Context))
+                if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
+                    return BadRequest(ApiResponse<string>.CreateFailure("Only YouTube source is supported", 400));
+
+
+                // check for same existing Request
+
+                var checkExistingRequest = await _helperService.IsRequestExist(
+                    dto.NumberOfQuestions,
+                    dto.SourceTypeId,
+                    dto.DifficultyTypeId,
+                    dto.QuestionsTypeId,
+                    dto.VideoUrl);
+                if (checkExistingRequest == null)
                 {
-
                     var addedLog = await _helperService.AddNewDevicelog(new DeviceLogDetail
                     {
                         DeviceId = dto.DeviceId,
                         SourceTypeId = dto.SourceTypeId,
-                        //RequestUrl = dto.VideoUrl,
+                        RequestUrl = dto.VideoUrl,
                         ActiveFlag = true,
                         CreatedDate = DateTime.UtcNow,
-                        CreatedBy = 0 // Assuming 0 for system user, adjust as needed
+                        CreatedBy = 0
                     });
+
+
+                    var userRequestPreference = new UserRequestPreference
+                    {
+                        RequestId = addedLog.Id,
+                        NumberOfQuestions = dto.NumberOfQuestions,
+                        DifficultyTypeId = dto.DifficultyTypeId,
+                        QuestionsTypeId = dto.QuestionsTypeId,
+                        LanguageId = dto.LanguageId,
+                    };
+
+                    await _helperService.AddUserPreference(userRequestPreference);
 
                     var createQuizRequest = new GenerateQuizRequest
                     {
                         SourceType = _helperService.GetDescriptionFromValue<SourceType>(dto.SourceTypeId),
-                        Source = dto.Context,
+                        Source = dto.VideoUrl,
                         NumQuestions = dto.NumberOfQuestions,
                         Difficulty = _helperService.GetDescriptionFromValue<DifficultyLevel>(dto.DifficultyTypeId),
                         PreviousQuestions = [],
                         QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId)
-
-                        //QuestionTypeId = dto.QuestionsTypeId!,
                     };
-                    responnse = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
-                }
 
-                return responnse;
+                    var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
+                    return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result!, "Questionnaire generated successfully"));
+
+                }
+                return StatusCode(300, ApiResponse<QuestionnaireResponseModel>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
+
             }
             catch (Exception ex)
             {
-                // Log the exception (consider using a logging framework)
                 Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
-                throw; // Re-throw the exception to be handled by global exception handler
+                return StatusCode(500, ApiResponse<string>.CreateFailure("Internal server error"));
             }
-
         }
 
 
 
         [HttpPost("GenrateQuestionnaireFromPrompt")]
-        public async Task<QuestionnaireResponseModel?> GenrateQuestionnaireFromPrompt([FromBody] GeneratePromptRequestModel dto)
+        public async Task<IActionResult?> GenrateQuestionnaireFromPrompt([FromBody] GeneratePromptRequestModel dto)
         {
             try
             {
-                var responnse = new QuestionnaireResponseModel();
-                var IsvalidDevice = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
+                if (!await _helperService.IsDeviceAllowedAsync(dto.DeviceId))
+                    return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device", 401));
 
-                if (IsvalidDevice && dto.SourceTypeId.Equals(SourceType.Prompt))
-                {
+                if (!dto.SourceTypeId.Equals((int)SourceType.Prompt))
+                    return BadRequest(ApiResponse<string>.CreateFailure("Only Prompt source is supported", 400));
+
 
                     var addedLog = await _helperService.AddNewDevicelog(new DeviceLogDetail
                     {
                         DeviceId = dto.DeviceId,
                         SourceTypeId = dto.SourceTypeId,
-                        //RequestUrl = dto.VideoUrl,
+                        RequestUrl = dto.Prompt,
                         ActiveFlag = true,
                         CreatedDate = DateTime.UtcNow,
-                        CreatedBy = 0 // Assuming 0 for system user, adjust as needed
+                        CreatedBy = 0
                     });
+
+
+                    var userRequestPreference = new UserRequestPreference
+                    {
+                        RequestId = addedLog.Id,
+                        NumberOfQuestions = dto.NumberOfQuestions,
+                        DifficultyTypeId = dto.DifficultyTypeId,
+                        QuestionsTypeId = dto.QuestionsTypeId,
+                        LanguageId = dto.LanguageId,
+                    };
+
+                    await _helperService.AddUserPreference(userRequestPreference);
 
                     var createQuizRequest = new GenerateQuizRequest
                     {
@@ -157,10 +147,10 @@ namespace VidyasetuAPI.Controllers
 
                         //QuestionTypeId = dto.QuestionsTypeId!,
                     };
-                    responnse = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
-                }
 
-                return responnse;
+                var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
+                return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result!, "Questionnaire generated successfully"));
+
             }
             catch (Exception ex)
             {
