@@ -17,6 +17,12 @@ public partial class VidyasetuAI_DevContext : DbContext
 
     public virtual DbSet<DeviceLogDetail> DeviceLogDetails { get; set; }
 
+    public virtual DbSet<ParticipantAnswer> ParticipantAnswers { get; set; }
+
+    public virtual DbSet<QuizParticipant> QuizParticipants { get; set; }
+
+    public virtual DbSet<SharedQuizSession> SharedQuizSessions { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserRequestPreference> UserRequestPreferences { get; set; }
@@ -90,6 +96,102 @@ public partial class VidyasetuAI_DevContext : DbContext
                 .HasForeignKey(d => d.DeviceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__device_lo__devic__440B1D61");
+        });
+
+        modelBuilder.Entity<ParticipantAnswer>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__particip__3213E83F2E9F230B");
+
+            entity.ToTable("participant_answers");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ActiveFlag)
+                .HasDefaultValue(true)
+                .HasColumnName("active_flag");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_date");
+            entity.Property(e => e.IsCorrect).HasColumnName("is_correct");
+            entity.Property(e => e.ParticipantId).HasColumnName("participant_id");
+            entity.Property(e => e.QuestionId)
+                .HasMaxLength(50)
+                .HasColumnName("question_id");
+            entity.Property(e => e.SelectedOption)
+                .HasMaxLength(200)
+                .HasColumnName("selected_option");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            entity.Property(e => e.UpdatedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_date");
+        });
+
+        modelBuilder.Entity<QuizParticipant>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__quiz_par__3213E83FD72BA9D5");
+
+            entity.ToTable("quiz_participants");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ActiveFlag)
+                .HasDefaultValue(true)
+                .HasColumnName("active_flag");
+            entity.Property(e => e.CorrectCount).HasColumnName("correct_count");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_date");
+            entity.Property(e => e.Nickname)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("nickname");
+            entity.Property(e => e.Percentage)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("percentage");
+            entity.Property(e => e.Score).HasColumnName("score");
+            entity.Property(e => e.SessionId).HasColumnName("session_id");
+            entity.Property(e => e.SubmittedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("submitted_at");
+            entity.Property(e => e.TotalQuestions).HasColumnName("total_questions");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            entity.Property(e => e.UpdatedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_date");
+        });
+
+        modelBuilder.Entity<SharedQuizSession>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__shared_q__3213E83F18B66C77");
+
+            entity.ToTable("shared_quiz_sessions");
+
+            entity.HasIndex(e => e.ShareCode, "UQ__shared_q__1888435F803A42A4").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ActiveFlag)
+                .HasDefaultValue(true)
+                .HasColumnName("active_flag");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_date");
+            entity.Property(e => e.GeneratedBy).HasColumnName("generated_by");
+            entity.Property(e => e.RequestId).HasColumnName("request_id");
+            entity.Property(e => e.ShareCode)
+                .IsRequired()
+                .HasMaxLength(10)
+                .HasColumnName("share_code");
+            entity.Property(e => e.Title)
+                .HasMaxLength(100)
+                .HasColumnName("title");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            entity.Property(e => e.UpdatedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_date");
         });
 
         modelBuilder.Entity<User>(entity =>
