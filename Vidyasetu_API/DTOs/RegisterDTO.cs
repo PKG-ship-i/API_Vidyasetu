@@ -2,7 +2,7 @@
 {
     public class RegisterDeviceDto
     {
-        public string DeviceIdentifier { get; set; }
-        public string DeviceToken { get; set; }
+        public required string DeviceIdentifier { get; set; }
+        public required string DeviceToken { get; set; }
     }
 }

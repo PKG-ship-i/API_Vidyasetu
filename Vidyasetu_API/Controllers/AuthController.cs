@@ -26,7 +26,7 @@ namespace VidyasetuAPI.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> Signup([FromBody] SignupDto dto)
 		{
-			if (_db.Users.Any(u => u.Email == dto.Email))
+			if (_db.Users.Any(u => u.Email == dto.Email || u.Mobile == dto.Mobile))
 				return BadRequest("User already exists");
 
 			var user = new User
@@ -70,7 +70,37 @@ namespace VidyasetuAPI.Controllers
 		}
 
 
-		[HttpGet("whoami")]
+        [HttpPost("device-register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterDevice([FromBody] RegisterDeviceDto dto)
+        {
+            var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(d => d.DeviceIdentifier == dto.DeviceIdentifier || d.DeviceToken == dto.DeviceToken);
+
+            if (existingDevice != null)
+
+                return Ok(existingDevice);
+
+            var device = new DeviceDetail
+
+            {
+
+                DeviceIdentifier = dto.DeviceIdentifier,
+
+                DeviceToken = dto.DeviceToken
+
+            };
+
+            _db.DeviceDetails.Add(device);
+
+            await _db.SaveChangesAsync();
+
+            return Ok(device);
+
+        }
+
+
+
+        [HttpGet("whoami")]
         [Authorize]
         public IActionResult WhoAmI()
 		{
