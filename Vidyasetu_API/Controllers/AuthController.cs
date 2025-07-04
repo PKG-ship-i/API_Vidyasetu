@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Vidyasetu_API.DTOs;
+using Vidyasetu_API.DTOs.Response;
 using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
@@ -22,91 +23,94 @@ namespace VidyasetuAPI.Controllers
 			_authService = authService;
 		}
 
-		[HttpPost("signup")]
-		[AllowAnonymous]
-		public async Task<IActionResult> Signup([FromBody] SignupDto dto)
-		{
-			if (_db.Users.Any(u => u.Email == dto.Email || u.Mobile == dto.Mobile))
-				return BadRequest("User already exists");
+        [HttpPost("signup")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Signup([FromBody] SignupDto dto)
+        {
+            if (_db.Users.Any(u => u.Email == dto.Email || u.Mobile == dto.Mobile))
+                return BadRequest(ApiResponse<string>.Fail("User already exists", 400));
 
-			var user = new User
-			{
-				//Id = Guid.NewGuid(),
-				Email = dto.Email,
-				Firstname = dto.Firstname,
-				Lastname = dto.Lastname,
-				CreatedDate = DateTime.UtcNow,
-				Password = BCrypt.Net.BCrypt.HashPassword(dto.Password), // install BCrypt package
-				Role = "User"
-			};
-
-			 _db.Users.Add(user);
-			await _db.SaveChangesAsync();
-
-			//var token = _authService.GenerateJwtToken(user.Id);
-
-			var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.Id == dto.DeviceId);
-			existingDevice!.UserId = user.Id;
-            _db.DeviceDetails.Update(existingDevice);
-			await _db.SaveChangesAsync();
-			var token = _authService.GenerateToken(user, existingDevice.Id);
-			var obj = new
-			{
-				Token = token,
-				userDetails = user,
+            var user = new User
+            {
+                Email = dto.Email,
+                Firstname = dto.Firstname,
+                Lastname = dto.Lastname,
+                CreatedDate = DateTime.UtcNow,
+                Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = "User"
             };
-			return Ok(new {obj});
-		}
 
-		[HttpPost("login")]
-		[AllowAnonymous]
-		public async Task<IActionResult> Login([FromBody] LoginDto dto)
-		{
-			var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-			if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
-				return Unauthorized("Invalid credentials");
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
 
-			var device = await _db.DeviceDetails.Where(x => x.UserId == user.Id).FirstOrDefaultAsync();
-			if(device == null)
-			return Unauthorized("Unauthorized Device");
+            var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.Id == dto.DeviceId);
+            if (existingDevice == null)
+                return BadRequest(ApiResponse<string>.Fail("Invalid device", 400));
 
-			var token = _authService.GenerateToken(user, device.Id);
-            var obj = new
+            existingDevice.UserId = user.Id;
+            _db.DeviceDetails.Update(existingDevice);
+            await _db.SaveChangesAsync();
+
+            var token = _authService.GenerateToken(user, existingDevice.Id);
+
+            var result = new
             {
                 Token = token,
-                userDetails = user,
+                UserDetails = user
             };
-            return Ok(new { obj });
-		}
+
+            return Ok(ApiResponse<object>.Success(result, "Signup successful"));
+        }
+
+
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+                return Unauthorized(ApiResponse<string>.Fail("Invalid credentials", 401));
+
+            var device = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.UserId == user.Id);
+            if (device == null)
+                return Unauthorized(ApiResponse<string>.Fail("Unauthorized device", 401));
+
+            var token = _authService.GenerateToken(user, device.Id);
+
+            var result = new
+            {
+                Token = token,
+                UserDetails = user
+            };
+
+            return Ok(ApiResponse<object>.Success(result, "Login successful"));
+        }
+
 
 
         [HttpPost("device-register")]
         [AllowAnonymous]
         public async Task<IActionResult> RegisterDevice([FromBody] RegisterDeviceDto dto)
         {
-            var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(d => d.DeviceIdentifier == dto.DeviceIdentifier || d.DeviceToken == dto.DeviceToken);
+            var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(d =>
+                d.DeviceIdentifier == dto.DeviceIdentifier ||
+                d.DeviceToken == dto.DeviceToken);
 
             if (existingDevice != null)
-
-                return Ok(existingDevice);
+                return Ok(ApiResponse<DeviceDetail>.Success(existingDevice, "Device already registered"));
 
             var device = new DeviceDetail
-
             {
-
                 DeviceIdentifier = dto.DeviceIdentifier,
-
                 DeviceToken = dto.DeviceToken
-
             };
 
             _db.DeviceDetails.Add(device);
-
             await _db.SaveChangesAsync();
 
-            return Ok(device);
-
+            return Ok(ApiResponse<DeviceDetail>.Success(device, "Device registered successfully"));
         }
+
 
 
 
