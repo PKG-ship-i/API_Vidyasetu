@@ -89,25 +89,34 @@ namespace VidyasetuAPI.Controllers
                         SourceType = _helperService.GetDescriptionFromValue<SourceType>(dto.SourceTypeId),
                         Source = dto.VideoUrl,
                         NumQuestions = dto.NumberOfQuestions,
-                        QuestionType = _helperService.GetDescriptionFromValue<QuestionType>(dto.QuestionsTypeId), 
+                        QuestionType = _helperService.GetDescriptionFromValue<QuestionType>(dto.QuestionsTypeId),
                         Difficulty = _helperService.GetDescriptionFromValue<DifficultyLevel>(dto.DifficultyTypeId),
                         PreviousQuestions = [],
                         QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId)
                     };
 
                     var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
-                    return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result!, "Questionnaire generated successfully"));
+                    //return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result!, "Questionnaire generated successfully"));
 
+                    var response = new GeneratedQuestionResponse()
+                    {
+                        token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
+                        questionnaireResponseModel = result!
+                    };
+
+
+                    return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response, "Questionnaire generated successfully"));
                 }
-                return StatusCode(300, ApiResponse<QuestionnaireResponseModel>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
 
+               
+                return StatusCode(300, ApiResponse<GeneratedQuestionResponse>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
-                return StatusCode(500, ApiResponse<string>.CreateFailure("Irrelvant content or server error"));
-            }
-        }
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
+				return StatusCode(500, ApiResponse<string>.CreateFailure("Internal server error"));
+			}
+		}
 
 
 
@@ -169,7 +178,12 @@ namespace VidyasetuAPI.Controllers
                     };
 
                 var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
-                return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result!, "Questionnaire generated successfully"));
+                var response = new GeneratedQuestionResponse()
+                {
+                    token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
+                    questionnaireResponseModel = result!
+                };
+                return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response!, "Questionnaire generated successfully"));
 
             }
             catch (Exception ex)
