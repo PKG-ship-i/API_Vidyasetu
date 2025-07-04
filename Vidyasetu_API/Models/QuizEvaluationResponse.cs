@@ -25,4 +25,12 @@ namespace Vidyasetu_API.Models
         public string GivenAnswer { get; set; } = string.Empty;
         public string TimeStamp { get; set; } = string.Empty;
     }
+
+    public class CorrrectQuestionDetail
+    {
+        public string QuestionText { get; set; } = string.Empty;
+        public string CorrectAnswer { get; set; } = string.Empty;
+        public string GivenAnswer { get; set; } = string.Empty;
+        public string TimeStamp { get; set; } = string.Empty;
+    }
 }

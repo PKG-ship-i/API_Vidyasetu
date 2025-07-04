@@ -69,6 +69,7 @@ namespace Vidyasetu_API.Controllers
             int total = questions.Count;
             int correct = 0;
             var incorrectList = new List<IncorrectQuestionDetail>();
+            var correctList = new List<CorrrectQuestionDetail>();
 
             foreach (var userAnswer in request.Answers)
             {
@@ -79,6 +80,13 @@ namespace Vidyasetu_API.Controllers
                 {
                     if (string.Equals(question.CorrectAnswer.Trim(), userAnswer.GivenAnswer.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
+                        correctList.Add(new CorrrectQuestionDetail
+                        {
+                            QuestionText = question.QuestionText,
+                            CorrectAnswer = question.CorrectAnswer,
+                            GivenAnswer = userAnswer.GivenAnswer,
+                            TimeStamp = question.Timestamp
+                        });
                         correct++;
                     }
                     else
