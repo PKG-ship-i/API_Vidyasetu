@@ -1,7 +1,5 @@
-﻿using System.Text.Json;
-using System;
+﻿using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
-using Vidyasetu_API.Models;
 using Microsoft.EntityFrameworkCore;
 using Azure.Core;
 using Vidyasetu_API.Common;
@@ -108,9 +106,14 @@ namespace Vidyasetu_API.Controllers
             {
                 TotalQuestions = total,
                 CorrectAnswers = correct,
+                TotalTimeTaken = "00:00",
                 ScorePercentage = Math.Round(percentage, 2),
                 Result = result,
                 Medal = medal,
+                Flashcards = userResponse.FlashcardJson != null
+                    ? JsonSerializer.Deserialize<List<Flashcard>>(userResponse.FlashcardJson)
+                    : new List<Flashcard>(),
+                Summary = userResponse.SummaryJson ?? string.Empty,
                 IncorrectQuestions = incorrectList
             };
 
