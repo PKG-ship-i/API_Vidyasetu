@@ -44,7 +44,7 @@ namespace Vidyasetu_API.Common
             await _db.SaveChangesAsync();
             return userRequestPreference;
         }
-        public async Task<QuestionnaireResponseModel?> IsRequestExist(
+        public async Task<GeneratedQuestionResponse?> IsRequestExist(
             int numberOfQuestion,
             int sourceTypeId,
             int diffcultyTypeId,
@@ -96,7 +96,18 @@ namespace Vidyasetu_API.Common
                 response.Flashcards = JsonSerializer.Deserialize<List<Flashcard>>(existingRequest.FlashcardJson, options);
             }
 
-            return response;
+            var device = await _db.DeviceDetails
+                .Where(x => x.Id == existingRequest.RequestId)
+                .Select(x => new { x.DeviceIdentifier, x.DeviceToken, x.Id })
+                .FirstOrDefaultAsync();
+
+            var result = new GeneratedQuestionResponse()
+            {
+                token = EncryptDecryptHelper.Encrypt(existingRequest.Id.ToString(), device!.Id.ToString()),
+                questionnaireResponseModel = response
+            };
+
+            return result;
         }
 
 
