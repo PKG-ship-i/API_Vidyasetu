@@ -10,5 +10,6 @@ namespace Vidyasetu_API.Services
 		Task SubmitAnswersAsync(string shareCode, SubmitQuizAnswersRequest request);
 		Task<QuestionnaireResponseModel> GetQuizByShareCodeAsync(string shareCode);
 		Task<long> CreateParticipantAsync(string shareCode, JoinQuizRequest request);
+		Task SubmitLiveAnswersAsync(string shareCode, SubmitQuizAnswersRequest request);
 	}
 }

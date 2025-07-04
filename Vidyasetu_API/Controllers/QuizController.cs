@@ -79,6 +79,21 @@ namespace Vidyasetu_API.Controllers
 			}
 		}
 
+		// POST: /api/quiz/{shareCode}/submit
+		[HttpPost("{shareCode}/submit-live")]
+		public async Task<IActionResult> SubmitLiveAnswers(string shareCode, [FromBody] SubmitQuizAnswersRequest request)
+		{
+			try
+			{
+				await _quizService.SubmitLiveAnswersAsync(shareCode, request);
+				return Ok(ApiResponse<string>.CreateSuccess("Answers submitted successfully!"));
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ApiResponse<string>.CreateFailure(ex.Message));
+			}
+		}
+
 		// GET: /api/quiz/{shareCode}/leaderboard
 		[HttpGet("{shareCode}/leaderboard")]
 		public async Task<IActionResult> GetLeaderboard(string shareCode)
