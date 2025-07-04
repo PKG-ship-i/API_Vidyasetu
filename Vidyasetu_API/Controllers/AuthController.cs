@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Vidyasetu_API.Common;
 using Vidyasetu_API.DTOs;
+using Vidyasetu_API.DTOs.Response;
 using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
@@ -53,17 +54,25 @@ namespace VidyasetuAPI.Controllers
 
             var token = _authService.GenerateToken(user, existingDevice.Id);
 
-            var result = new
-            {
-                Token = token,
-                UserDetails = user
-            };
+			var result = new SignupResponseDto
+			{
+				Token = token,
+				UserDetails = new UserDto
+				{
+					Id = user.Id,
+					Firstname = user.Firstname,
+					Lastname = user.Lastname,
+					Email = user.Email,
+					Role = user.Role
+				}
+			};
 
-            return Ok(ApiResponse<object>.CreateSuccess(result, "Signup successful"));
-        }
+			return Ok(ApiResponse<SignupResponseDto>.CreateSuccess(result, "Signup successful"));
+
+		}
 
 
-        [HttpPost("login")]
+		[HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {

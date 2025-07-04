@@ -57,7 +57,14 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<HelperService>();
 
 // ✅ 4. Swagger + Controllers
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+builder.Services.AddControllers()
+	.AddJsonOptions(options =>
+	{
+		options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+		options.JsonSerializerOptions.WriteIndented = true; // optional
+	});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddCustomSwagger();
 
