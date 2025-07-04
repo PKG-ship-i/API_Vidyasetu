@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Vidyasetu_API.Common;
 using Vidyasetu_API.DTOs;
-using Vidyasetu_API.DTOs.Response;
 using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
@@ -28,7 +28,7 @@ namespace VidyasetuAPI.Controllers
         public async Task<IActionResult> Signup([FromBody] SignupDto dto)
         {
             if (_db.Users.Any(u => u.Email == dto.Email || u.Mobile == dto.Mobile))
-                return BadRequest(ApiResponse<string>.Fail("User already exists", 400));
+                return BadRequest(ApiResponse<object>.CreateFailure("User already exists", 400));
 
             var user = new User
             {
@@ -45,7 +45,7 @@ namespace VidyasetuAPI.Controllers
 
             var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.Id == dto.DeviceId);
             if (existingDevice == null)
-                return BadRequest(ApiResponse<string>.Fail("Invalid device", 400));
+                return BadRequest(ApiResponse<string>.CreateFailure("Invalid device", 400));
 
             existingDevice.UserId = user.Id;
             _db.DeviceDetails.Update(existingDevice);
@@ -59,7 +59,7 @@ namespace VidyasetuAPI.Controllers
                 UserDetails = user
             };
 
-            return Ok(ApiResponse<object>.Success(result, "Signup successful"));
+            return Ok(ApiResponse<object>.CreateSuccess(result, "Signup successful"));
         }
 
 
@@ -69,11 +69,11 @@ namespace VidyasetuAPI.Controllers
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
-                return Unauthorized(ApiResponse<string>.Fail("Invalid credentials", 401));
+                return Unauthorized(ApiResponse<string>.CreateFailure("Invalid credentials", 401));
 
             var device = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.UserId == user.Id);
             if (device == null)
-                return Unauthorized(ApiResponse<string>.Fail("Unauthorized device", 401));
+                return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device", 401));
 
             var token = _authService.GenerateToken(user, device.Id);
 
@@ -83,7 +83,7 @@ namespace VidyasetuAPI.Controllers
                 UserDetails = user
             };
 
-            return Ok(ApiResponse<object>.Success(result, "Login successful"));
+            return Ok(ApiResponse<object>.CreateSuccess(result, "Login successful"));
         }
 
 
@@ -97,7 +97,7 @@ namespace VidyasetuAPI.Controllers
                 d.DeviceToken == dto.DeviceToken);
 
             if (existingDevice != null)
-                return Ok(ApiResponse<DeviceDetail>.Success(existingDevice, "Device already registered"));
+                return Ok(ApiResponse<DeviceDetail>.CreateSuccess(existingDevice, "Device already registered"));
 
             var device = new DeviceDetail
             {
@@ -108,7 +108,7 @@ namespace VidyasetuAPI.Controllers
             _db.DeviceDetails.Add(device);
             await _db.SaveChangesAsync();
 
-            return Ok(ApiResponse<DeviceDetail>.Success(device, "Device registered successfully"));
+            return Ok(ApiResponse<DeviceDetail>.CreateSuccess(device, "Device registered successfully"));
         }
 
 
@@ -121,11 +121,12 @@ namespace VidyasetuAPI.Controllers
 			var userId = User.FindFirst("userId")?.Value;
 			var claims = User.Claims.Select(c => new { Type = c.Type, Value = c.Value });
 
-			return Ok(new
+			return Ok(ApiResponse<object>.CreateSuccess(new
 			{
 				IsAuthenticated = User.Identity?.IsAuthenticated,
 				Claims = claims
-			});
+			}, "User identity details"));
+
 		}
 	}
 }
