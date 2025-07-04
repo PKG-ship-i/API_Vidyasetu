@@ -11,6 +11,8 @@ namespace Vidyasetu_API.Models
         public string Medal { get; set; } = string.Empty; // "Gold", "Silver", "Bronze", etc.
         public string VideoUrl { get; set; } = string.Empty;
         public string TotalTimeTaken { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+
         public string Summary { get; set; } = default!;
         public List<Flashcard>? Flashcards { get; set; } = default!;
         public List<IncorrectQuestionDetail> IncorrectQuestions { get; set; } = new();

@@ -233,6 +233,7 @@ namespace VidyasetuAPI.Controllers
                     FlashcardJson = JsonSerializer.Serialize(parsed?.Flashcards),
                     SummaryJson = JsonSerializer.Serialize(parsed?.Summary),
                     RecommendationsJson = JsonSerializer.Serialize(parsed?.Recommendations),
+                    Title = JsonSerializer.Serialize(parsed?.Title)
                 };
 
                 _db.UserRequestResponses.Add(responseEntity);

@@ -12,7 +12,11 @@ namespace Vidyasetu_API.Models
 
         [JsonPropertyName("summary")]
         public string? Summary { get; set; }
+
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+        
         [JsonPropertyName("recommendations")]
-        public string? Recommendations { get; set; }
+        public List<object>? Recommendations { get; set; }
     }
 }

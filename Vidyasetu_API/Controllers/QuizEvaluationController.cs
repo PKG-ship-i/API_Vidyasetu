@@ -122,6 +122,7 @@ namespace Vidyasetu_API.Controllers
                 ScorePercentage = Math.Round(percentage, 2),
                 Result = result,
                 Medal = medal,
+                Title = userResponse.Title ?? string.Empty,
                 Flashcards = userResponse.FlashcardJson != null
                     ? JsonSerializer.Deserialize<List<Flashcard>>(userResponse.FlashcardJson)
                     : new List<Flashcard>(),
