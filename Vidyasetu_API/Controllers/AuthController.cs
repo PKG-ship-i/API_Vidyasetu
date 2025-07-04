@@ -49,10 +49,13 @@ namespace VidyasetuAPI.Controllers
 			existingDevice!.UserId = user.Id;
             _db.DeviceDetails.Update(existingDevice);
 			await _db.SaveChangesAsync();
-
 			var token = _authService.GenerateToken(user, existingDevice.Id);
-
-			return Ok(new { token });
+			var obj = new
+			{
+				Token = token,
+				userDetails = user,
+            };
+			return Ok(new {obj});
 		}
 
 		[HttpPost("login")]
@@ -67,8 +70,13 @@ namespace VidyasetuAPI.Controllers
 			if(device == null)
 			return Unauthorized("Unauthorized Device");
 
-			var token = _authService.GenerateToken(user,device.Id);
-			return Ok(new { token });
+			var token = _authService.GenerateToken(user, device.Id);
+            var obj = new
+            {
+                Token = token,
+                userDetails = user,
+            };
+            return Ok(new { obj });
 		}
 
 
