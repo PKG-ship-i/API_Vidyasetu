@@ -299,6 +299,7 @@ public partial class VidyasetuAI_DevContext : DbContext
             entity.Property(e => e.RecommendationsJson).HasColumnName("recommendations_json");
             entity.Property(e => e.RequestId).HasColumnName("request_id");
             entity.Property(e => e.SummaryJson).HasColumnName("summary_json");
+            entity.Property(e => e.Title).HasColumnName("title");
         });
 
         OnModelCreatingPartial(modelBuilder);

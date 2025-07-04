@@ -18,4 +18,6 @@ public partial class UserRequestResponse
     public string SummaryJson { get; set; }
 
     public string RecommendationsJson { get; set; }
+
+    public string Title { get; set; }
 }
