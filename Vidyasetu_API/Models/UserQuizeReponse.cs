@@ -14,4 +14,6 @@ public partial class UserQuizeReponse
     public string Question { get; set; }
 
     public string UserAnswer { get; set; }
+
+    public string TotalTimeTaken { get; set; }
 }

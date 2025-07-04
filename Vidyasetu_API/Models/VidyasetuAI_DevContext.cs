@@ -248,6 +248,7 @@ public partial class VidyasetuAI_DevContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Question).HasColumnName("question");
             entity.Property(e => e.RequestId).HasColumnName("request_id");
+            entity.Property(e => e.TotalTimeTaken).HasColumnName("total_time_taken");
             entity.Property(e => e.UserAnswer).HasColumnName("user_answer");
         });
 
