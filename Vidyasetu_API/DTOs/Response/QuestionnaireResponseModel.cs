@@ -8,6 +8,8 @@ namespace Vidyasetu_API.DTOs.Response
         public List<Question>? Questions { get; set; } = default!;
         public string Summary { get; set; } = default!;
         public List<Flashcard>? Flashcards { get; set; } = default!;
+
+
     }
 
     public class Question

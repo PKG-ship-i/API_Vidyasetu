@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Vidyasetu_API;
 using Vidyasetu_API.Common;
 using Vidyasetu_API.Extensions;
@@ -15,7 +15,7 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowFrontend", policy =>
 	{
-		policy.WithOrigins("http://localhost:5173") // 👈 Your Vite frontend
+		policy.AllowAnyOrigin()// WithOrigins("http://localhost:5173", "http://192.168.0.1:5173") // 👈 Your Vite frontend
 			  .AllowAnyHeader()
 			  .AllowAnyMethod();
 		//.AllowCredentials(); // Optional if using cookies
