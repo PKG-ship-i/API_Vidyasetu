@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Vidyasetu_API;
 using Vidyasetu_API.Common;
 using Vidyasetu_API.Extensions;
+using Vidyasetu_API.Hubs;
 using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
@@ -53,8 +54,14 @@ builder.Services.AddAuthorization();
 // ✅ 3. DI + DB
 builder.Services.AddDbContext<VidyasetuAI_DevContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<HelperService>();
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IQuizService, QuizService>();
+
+
 
 // ✅ 4. Swagger + Controllers
 //builder.Services.AddControllers();
@@ -83,4 +90,5 @@ app.UseAuthentication();          // ✅ REQUIRED for JWT auth
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<LeaderboardHub>("/hub/leaderboard");
 app.Run();
