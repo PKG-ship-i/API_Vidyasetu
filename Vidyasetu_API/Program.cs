@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Vidyasetu_API;
+using Vidyasetu_API.Extensions;
 using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
@@ -46,7 +47,8 @@ builder.Services.AddAuthorization();
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddCustomSwagger();
+//builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 

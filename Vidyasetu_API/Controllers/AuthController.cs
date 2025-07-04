@@ -36,14 +36,19 @@ namespace VidyasetuAPI.Controllers
 				Firstname = dto.Firstname,
 				Lastname = dto.Lastname,
 				CreatedDate = DateTime.UtcNow,
-				Password = BCrypt.Net.BCrypt.HashPassword(dto.Password) // install BCrypt package
+				Password = BCrypt.Net.BCrypt.HashPassword(dto.Password), // install BCrypt package
+				Role = "User"
 			};
 
-			_db.Users.Add(user);
+			 _db.Users.Add(user);
 			await _db.SaveChangesAsync();
 
 			//var token = _authService.GenerateJwtToken(user.Id);
-			var token = _authService.GenerateToken(user.Email);
+
+			var existingDevice = await _db.DeviceDetails.FirstOrDefaultAsync(x => x.Id == dto.DeviceId);
+			existingDevice!.UserId = user.Id;
+
+			var token = _authService.GenerateToken(user, existingDevice.Id);
 
 			return Ok(new { token });
 		}
@@ -56,7 +61,11 @@ namespace VidyasetuAPI.Controllers
 			if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
 				return Unauthorized("Invalid credentials");
 
-			var token = _authService.GenerateToken(user.Email);
+			var device = await _db.DeviceDetails.Where(x => x.UserId == user.Id).FirstOrDefaultAsync();
+			if(device == null)
+			return Unauthorized("Unauthorized Device");
+
+			var token = _authService.GenerateToken(user,device.Id);
 			return Ok(new { token });
 		}
 
@@ -66,8 +75,13 @@ namespace VidyasetuAPI.Controllers
         public IActionResult WhoAmI()
 		{
 			var userId = User.FindFirst("userId")?.Value;
-			var role = User.FindFirst(ClaimTypes.Role)?.Value;
-			return Ok(new { userId, role });
+			var claims = User.Claims.Select(c => new { Type = c.Type, Value = c.Value });
+
+			return Ok(new
+			{
+				IsAuthenticated = User.Identity?.IsAuthenticated,
+				Claims = claims
+			});
 		}
 	}
 }
