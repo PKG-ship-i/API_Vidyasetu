@@ -38,14 +38,14 @@ namespace VidyasetuAPI.Controllers
         {
             try
             {
-                var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
+                  var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
 
                   if (device == null)
                     return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device or", 401));
                     int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
 
 
-                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
+                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]) && device.UserId == null)
                     return StatusCode(302, ApiResponse<string>.CreateFailure("you have exceded the limit of free access, please do login or signup for further process"));
 
                 if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
@@ -98,17 +98,25 @@ namespace VidyasetuAPI.Controllers
                     var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
                     //return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result!, "Questionnaire generated successfully"));
 
-                    var response = new GeneratedQuestionResponse()
+
+                    if (result != null)
                     {
-                        token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
-                        questionnaireResponseModel = result!
-                    };
 
+                        var getUserResponse = await _db.UserRequestResponses
+                            .FirstOrDefaultAsync(x => x.RequestId == addedLog.Id);
+                        var response = new GeneratedQuestionResponse()
+                        {
+                            token = EncryptDecryptHelper.Encrypt(getUserResponse!.Id.ToString(), dto.DeviceId.ToString()),
+                            questionnaireResponseModel = result!
+                        };
 
-                    return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response, "Questionnaire generated successfully"));
+                        return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response!, "Questionnaire generated successfully"));
+                    }
+
+                    return StatusCode(500, ApiResponse<string>.CreateFailure("Irrelvant content or server error"));
+
                 }
 
-               
                 return StatusCode(300, ApiResponse<GeneratedQuestionResponse>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
             }
 			catch (Exception ex)
@@ -127,63 +135,67 @@ namespace VidyasetuAPI.Controllers
             {
                 var device = await _helperService.IsDeviceAllowedAsync(dto.DeviceId);
 
-                  if (device == null)
+                if (device == null)
                     return Unauthorized(ApiResponse<string>.CreateFailure("Unauthorized device or", 401));
                 int logCount = await _db.DeviceLogDetails.CountAsync(log => log.DeviceId == device.Id);
 
 
-                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
+                if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]) && device.UserId == null)
                     return StatusCode(302, ApiResponse<string>.CreateFailure("you have exceded the limit of free access, please do login or signup for further process"));
-
-                if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
-                    return BadRequest(ApiResponse<string>.CreateFailure("Only YouTube source is supported", 400));
-
 
 
                 if (!dto.SourceTypeId.Equals((int)SourceType.Prompt))
                     return BadRequest(ApiResponse<string>.CreateFailure("Only Prompt source is supported", 400));
 
 
-                    var addedLog = await _helperService.AddNewDevicelog(new DeviceLogDetail
-                    {
-                        DeviceId = dto.DeviceId,
-                        SourceTypeId = dto.SourceTypeId,
-                        RequestUrl = dto.Prompt,
-                        ActiveFlag = true,
-                        CreatedDate = DateTime.UtcNow,
-                        CreatedBy = 0
-                    });
+                var addedLog = await _helperService.AddNewDevicelog(new DeviceLogDetail
+                {
+                    DeviceId = dto.DeviceId,
+                    SourceTypeId = dto.SourceTypeId,
+                    RequestUrl = dto.Prompt,
+                    ActiveFlag = true,
+                    CreatedDate = DateTime.UtcNow,
+                    CreatedBy = 0
+                });
 
 
-                    var userRequestPreference = new UserRequestPreference
-                    {
-                        RequestId = addedLog.Id,
-                        NumberOfQuestions = dto.NumberOfQuestions,
-                        DifficultyTypeId = dto.DifficultyTypeId,
-                        QuestionsTypeId = dto.QuestionsTypeId,
-                        LanguageId = dto.LanguageId,
-                    };
+                var userRequestPreference = new UserRequestPreference
+                {
+                    RequestId = addedLog.Id,
+                    NumberOfQuestions = dto.NumberOfQuestions,
+                    DifficultyTypeId = dto.DifficultyTypeId,
+                    QuestionsTypeId = dto.QuestionsTypeId,
+                    LanguageId = dto.LanguageId,
+                };
 
-                    await _helperService.AddUserPreference(userRequestPreference);
+                await _helperService.AddUserPreference(userRequestPreference);
 
-                    var createQuizRequest = new GenerateQuizRequest
-                    {
-                        SourceType = _helperService.GetDescriptionFromValue<SourceType>(dto.SourceTypeId),
-                        Source = dto.Prompt,
-                        NumQuestions = dto.NumberOfQuestions,
-                        Difficulty = _helperService.GetDescriptionFromValue<DifficultyLevel>(dto.DifficultyTypeId),
-                        PreviousQuestions = [],
-                        QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId),
-                        QuestionType = _helperService.GetDescriptionFromValue<QuestionType>(dto.QuestionsTypeId),
-                    };
+                var createQuizRequest = new GenerateQuizRequest
+                {
+                    SourceType = _helperService.GetDescriptionFromValue<SourceType>(dto.SourceTypeId),
+                    Source = dto.Prompt,
+                    NumQuestions = dto.NumberOfQuestions,
+                    Difficulty = _helperService.GetDescriptionFromValue<DifficultyLevel>(dto.DifficultyTypeId),
+                    PreviousQuestions = [],
+                    QuizLanguage = _helperService.GetDescriptionFromValue<LanguageType>(dto.LanguageId),
+                    QuestionType = _helperService.GetDescriptionFromValue<QuestionType>(dto.QuestionsTypeId),
+                };
 
                 var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
-                var response = new GeneratedQuestionResponse()
+
+                if (result != null)
                 {
-                    token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
-                    questionnaireResponseModel = result!
-                };
-                return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response!, "Questionnaire generated successfully"));
+                    var getUserResponse = await _db.UserRequestResponses
+                           .FirstOrDefaultAsync(x => x.RequestId == addedLog.Id);
+                    var response = new GeneratedQuestionResponse()
+                    {
+                        token = EncryptDecryptHelper.Encrypt(getUserResponse!.Id.ToString(), dto.DeviceId.ToString()),
+                        questionnaireResponseModel = result!
+                    };
+                    return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response!, "Questionnaire generated successfully"));
+                }
+
+                return StatusCode(500, ApiResponse<string>.CreateFailure("Irrelvant content or server error"));
 
             }
             catch (Exception ex)
@@ -214,26 +226,32 @@ namespace VidyasetuAPI.Controllers
                 var responseBody = await response.Content.ReadAsStringAsync();
                 var parsed = JsonSerializer.Deserialize<QuizResponseModel>(responseBody);
 
-                var responseEntity = new UserRequestResponse
+                if (parsed!.Questions!.Count > 0)
                 {
-                    RequestId = RequestId,
-                    QuestionJson = JsonSerializer.Serialize(parsed?.Questions),
-                    FlashcardJson = JsonSerializer.Serialize(parsed?.Flashcards),
-                    SummaryJson = JsonSerializer.Serialize(parsed?.Summary)
-                };
-
-                _db.UserRequestResponses.Add(responseEntity);
-                await _db.SaveChangesAsync();
-                /// Need to insert into the database for QuestionRequetResponse
-
-                var result = JsonSerializer.Deserialize<QuestionnaireResponseModel>(
-                    responseBody,
-                    new JsonSerializerOptions
+                    var responseEntity = new UserRequestResponse
                     {
-                        PropertyNameCaseInsensitive = true
-                    });
+                        RequestId = RequestId,
+                        QuestionJson = JsonSerializer.Serialize(parsed?.Questions),
+                        FlashcardJson = JsonSerializer.Serialize(parsed?.Flashcards),
+                        SummaryJson = JsonSerializer.Serialize(parsed?.Summary)
+                    };
 
-                return result;
+                    _db.UserRequestResponses.Add(responseEntity);
+                    await _db.SaveChangesAsync();
+                    /// Need to insert into the database for QuestionRequetResponse
+
+                    var result = JsonSerializer.Deserialize<QuestionnaireResponseModel>(
+                        responseBody,
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+
+                    return result;
+                }
+
+                return null;
+
             }
 
             catch (Exception ex)

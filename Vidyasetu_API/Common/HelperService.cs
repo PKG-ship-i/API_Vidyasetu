@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
+using System.Drawing;
 using System.Reflection;
 using System.Text.Json;
 using Vidyasetu_API.DTOs.Response;
@@ -96,8 +97,10 @@ namespace Vidyasetu_API.Common
                 response.Flashcards = JsonSerializer.Deserialize<List<Flashcard>>(existingRequest.FlashcardJson, options);
             }
 
-            var device = await _db.DeviceDetails
-                .Where(x => x.Id == existingRequest.RequestId)
+
+			var logdetails = await _db.DeviceLogDetails.FirstOrDefaultAsync(x=>x.Id == matchingId);
+			var device = await _db.DeviceDetails
+                .Where(x => x.Id == logdetails!.DeviceId)
                 .Select(x => new { x.DeviceIdentifier, x.DeviceToken, x.Id })
                 .FirstOrDefaultAsync();
 
