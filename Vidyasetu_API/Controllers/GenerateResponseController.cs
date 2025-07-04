@@ -1,13 +1,14 @@
-﻿using System.Text.Json;
-using System.Text;
+﻿using Azure.Core;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Text.Json;
 using Vidyasetu_API.Common;
-using Vidyasetu_API.Models;
 using Vidyasetu_API.DTOs;
 using Vidyasetu_API.DTOs.Response;
-using Azure.Core;
+using Vidyasetu_API.Models;
 
 namespace VidyasetuAPI.Controllers
 {
@@ -97,7 +98,7 @@ namespace VidyasetuAPI.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
-                return StatusCode(500, ApiResponse<string>.CreateFailure("Internal server error"));
+                return StatusCode(500, ApiResponse<string>.CreateFailure("Irrelvant content or server error"));
             }
         }
 
@@ -154,9 +155,8 @@ namespace VidyasetuAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (consider using a logging framework)
-                Console.WriteLine($"Error in GenrateQuestionnaireFromVideoURL: {ex.Message}");
-                throw; // Re-throw the exception to be handled by global exception handler
+                return StatusCode(500, ApiResponse<string>.CreateFailure("Irrelvant content or server error"));
+
             }
 
         }
@@ -167,40 +167,48 @@ namespace VidyasetuAPI.Controllers
 		#region Helper 
 		private async Task<QuestionnaireResponseModel?> GenerateQuizAsync(GenerateQuizRequest requestModel, long RequestId)
         {
-            using var client = new HttpClient();
-
-            var url = _config["PythonURL"];
-
-            var json = JsonSerializer.Serialize(requestModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync(url, content);
-            response.EnsureSuccessStatusCode();
-
-                var responseBody = await response.Content.ReadAsStringAsync();
-
-            var parsed = JsonSerializer.Deserialize<QuizResponseModel>(responseBody);
-
-            var responseEntity = new UserRequestResponse
+            try
             {
-                RequestId = RequestId,
-                QuestionJson = JsonSerializer.Serialize(parsed?.Questions),
-                FlashcardJson = JsonSerializer.Serialize(parsed?.Flashcards),
-                SummaryJson = JsonSerializer.Serialize(parsed?.Summary)
-            };
+                using var client = new HttpClient();
 
-            _db.UserRequestResponses.Add(responseEntity);
-            await _db.SaveChangesAsync();
-            /// Need to insert into the database for QuestionRequetResponse
+                var url = _config["PythonURL"];
 
-            var result = JsonSerializer.Deserialize<QuestionnaireResponseModel>(
-                responseBody,
-                new JsonSerializerOptions
+                var json = JsonSerializer.Serialize(requestModel);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+                response.EnsureSuccessStatusCode();
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var parsed = JsonSerializer.Deserialize<QuizResponseModel>(responseBody);
+
+                var responseEntity = new UserRequestResponse
                 {
-                    PropertyNameCaseInsensitive = true
-                });
+                    RequestId = RequestId,
+                    QuestionJson = JsonSerializer.Serialize(parsed?.Questions),
+                    FlashcardJson = JsonSerializer.Serialize(parsed?.Flashcards),
+                    SummaryJson = JsonSerializer.Serialize(parsed?.Summary)
+                };
 
-            return result;
+                _db.UserRequestResponses.Add(responseEntity);
+                await _db.SaveChangesAsync();
+                /// Need to insert into the database for QuestionRequetResponse
+
+                var result = JsonSerializer.Deserialize<QuestionnaireResponseModel>(
+                    responseBody,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                return result;
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GenerateQuizAsync: {ex.Message}");
+                throw; // Re-throw the exception to be handled by global exception handler
+            }
+           
         }
         #endregion
 
