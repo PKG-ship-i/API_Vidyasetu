@@ -101,9 +101,13 @@ namespace VidyasetuAPI.Controllers
 
                     if (result != null)
                     {
+
+                        var getUserResponse = await _db.UserRequestResponses
+                            .FirstOrDefaultAsync(x => x.RequestId == addedLog.Id);
+
                         var response = new GeneratedQuestionResponse()
                         {
-                            token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
+                            token = EncryptDecryptHelper.Encrypt(getUserResponse!.Id.ToString(), dto.DeviceId.ToString()),
                             questionnaireResponseModel = result!
                         };
 
@@ -183,6 +187,9 @@ namespace VidyasetuAPI.Controllers
 
                 if (result != null)
                 {
+                    var getUserResponse = await _db.UserRequestResponses
+                          .FirstOrDefaultAsync(x => x.RequestId == addedLog.Id);
+
                     var response = new GeneratedQuestionResponse()
                     {
                         token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
