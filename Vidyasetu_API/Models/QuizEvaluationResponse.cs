@@ -14,6 +14,8 @@ namespace Vidyasetu_API.Models
         public string Summary { get; set; } = default!;
         public List<Flashcard>? Flashcards { get; set; } = default!;
         public List<IncorrectQuestionDetail> IncorrectQuestions { get; set; } = new();
+        public List<Recommendations>? Recommendations { get; set; } = default!;
+
     }
 
     public class IncorrectQuestionDetail

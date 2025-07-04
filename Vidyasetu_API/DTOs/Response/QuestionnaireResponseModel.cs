@@ -9,7 +9,7 @@ namespace Vidyasetu_API.DTOs.Response
         public string Summary { get; set; } = default!;
         public List<Flashcard>? Flashcards { get; set; } = default!;
 
-        public List<Recommendations>? recommendations { get; set; } = default!;
+        public List<Recommendations>? Recommendations { get; set; } = default!;
     }
 
     public class Question

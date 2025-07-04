@@ -104,7 +104,8 @@ namespace Vidyasetu_API.Controllers
                 >= 50 => "Bronze",
                 _ => "None"
             };
-
+            var logdeviceRequest = await _db.DeviceLogDetails
+            .FirstOrDefaultAsync(x => x.Id == userResponse.RequestId);
             var response = new QuizEvaluationResponse
             {
                 TotalQuestions = total,
@@ -117,7 +118,11 @@ namespace Vidyasetu_API.Controllers
                     ? JsonSerializer.Deserialize<List<Flashcard>>(userResponse.FlashcardJson)
                     : new List<Flashcard>(),
                 Summary = userResponse.SummaryJson ?? string.Empty,
-                IncorrectQuestions = incorrectList
+                IncorrectQuestions = incorrectList,
+                VideoUrl = logdeviceRequest?.RequestUrl ?? string.Empty,
+                Recommendations = userResponse.RecommendationsJson != null
+                    ? JsonSerializer.Deserialize<List<Recommendations>>(userResponse.RecommendationsJson)
+                    : new List<Recommendations>()
             };
 
             return Ok(ApiResponse<QuizEvaluationResponse>.CreateSuccess(response, "QuizEvaluation done successfully!"));
