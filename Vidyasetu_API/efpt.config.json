@@ -23,6 +23,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[participant_answers]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[quiz_participants]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[shared_quiz_sessions]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[user_request_preference]",
          "ObjectType": 0
       },
