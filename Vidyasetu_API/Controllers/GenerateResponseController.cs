@@ -135,10 +135,6 @@ namespace VidyasetuAPI.Controllers
                 if (logCount >= Convert.ToInt32(_config["AllowedRequestCount"]))
                     return StatusCode(302, ApiResponse<string>.CreateFailure("you have exceded the limit of free access, please do login or signup for further process"));
 
-                if (!dto.SourceTypeId.Equals((int)SourceType.Youtube))
-                    return BadRequest(ApiResponse<string>.CreateFailure("Only YouTube source is supported", 400));
-
-
 
                 if (!dto.SourceTypeId.Equals((int)SourceType.Prompt))
                     return BadRequest(ApiResponse<string>.CreateFailure("Only Prompt source is supported", 400));
