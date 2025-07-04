@@ -25,6 +25,8 @@ public partial class VidyasetuAI_DevContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserQuizeReponse> UserQuizeReponses { get; set; }
+
     public virtual DbSet<UserRequestPreference> UserRequestPreferences { get; set; }
 
     public virtual DbSet<UserRequestResponse> UserRequestResponses { get; set; }
@@ -235,6 +237,18 @@ public partial class VidyasetuAI_DevContext : DbContext
             entity.Property(e => e.UpdatedDate)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_date");
+        });
+
+        modelBuilder.Entity<UserQuizeReponse>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserQuiz__3213E83F327B59A1");
+
+            entity.ToTable("UserQuizeReponse");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Question).HasColumnName("question");
+            entity.Property(e => e.RequestId).HasColumnName("request_id");
+            entity.Property(e => e.UserAnswer).HasColumnName("user_answer");
         });
 
         modelBuilder.Entity<UserRequestPreference>(entity =>

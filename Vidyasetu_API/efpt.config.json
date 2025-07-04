@@ -43,6 +43,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[UserQuizeReponse]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[users]",
          "ObjectType": 0
       }
