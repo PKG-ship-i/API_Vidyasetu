@@ -7,13 +7,13 @@ namespace Vidyasetu_API.Common
         [Description("mcq")]
         MCQ = 1,
 
-        [Description("fillinblank")]
+        [Description("fill_in_the_blanks")]
         FillInBlank = 2,
 
         [Description("opentext")]
         OpenText = 3,
 
-        [Description("truefalse")]
+        [Description("true_false")]
         TrueFalse = 4
     }
 

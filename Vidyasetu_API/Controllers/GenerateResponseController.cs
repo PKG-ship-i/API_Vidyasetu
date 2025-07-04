@@ -65,7 +65,14 @@ namespace VidyasetuAPI.Controllers
 
 				var result = await GenerateQuizAsync(createQuizRequest, addedLog.Id);
 
-				return Ok(ApiResponse<QuestionnaireResponseModel>.CreateSuccess(result, "Questionnaire generated successfully"));
+                var response = new GeneratedQuestionResponse()
+                {
+                    token = EncryptDecryptHelper.Encrypt(addedLog.Id.ToString(), dto.DeviceId.ToString()),
+                    questionnaireResponseModel = result
+                };
+
+
+                return Ok(ApiResponse<GeneratedQuestionResponse>.CreateSuccess(response, "Questionnaire generated successfully"));
 			}
 			catch (Exception ex)
 			{
