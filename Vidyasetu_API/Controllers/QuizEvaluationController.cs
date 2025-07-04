@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using System;
+﻿using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
-using Vidyasetu_API.Models;
 using Microsoft.EntityFrameworkCore;
-using Azure.Core;
+using System;
+using System.Text.Json;
+using Vidyasetu_API.Common;
 using Vidyasetu_API.DTOs.Response;
+using Vidyasetu_API.Models;
 
 namespace Vidyasetu_API.Controllers
 {
@@ -119,7 +120,7 @@ namespace Vidyasetu_API.Controllers
                 IncorrectQuestions = incorrectList
             };
 
-            return Ok(response);
+            return Ok(ApiResponse<QuizEvaluationResponse>.CreateSuccess(response, "Quiz submitted"));
         }
     }
 }
