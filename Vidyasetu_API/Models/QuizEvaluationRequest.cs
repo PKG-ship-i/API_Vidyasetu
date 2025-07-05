@@ -3,6 +3,7 @@
     public class QuizEvaluationRequest
     {
         public string token { get; set; } = string.Empty;
+        public string TotalTimeTaken { get; set; } = string.Empty;
 
         public List<UserAnswerModel> Answers { get; set; } = new();
     }

@@ -118,7 +118,7 @@ namespace Vidyasetu_API.Controllers
             {
                 TotalQuestions = total,
                 CorrectAnswers = correct,
-                TotalTimeTaken = "00:00",
+                TotalTimeTaken = request.TotalTimeTaken,
                 ScorePercentage = Math.Round(percentage, 2),
                 Result = result,
                 Medal = medal,
@@ -138,7 +138,7 @@ namespace Vidyasetu_API.Controllers
                     : new List<Recommendation>()
             };
 
-            return Ok(ApiResponse<QuizEvaluationResponse>.CreateSuccess(response, "QuizEvaluation done successfully!"));
+            return Ok(ApiResponse<QuizEvaluationResponse>.CreateSuccess(response, "Quiz evaluation done successfully!"));
         }
     }
 }
