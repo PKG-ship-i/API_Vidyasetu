@@ -6,6 +6,7 @@ using Vidyasetu_API;
 using Vidyasetu_API.Common;
 using Vidyasetu_API.Extensions;
 using Vidyasetu_API.Hubs;
+using Vidyasetu_API.Middleware;
 using Vidyasetu_API.Models;
 using Vidyasetu_API.Services;
 
@@ -60,6 +61,9 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<HelperService>();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IAccessValidatorService, AccessValidatorService>();
+builder.Services.AddScoped<ITokenValidator, TokenValidator>();
+builder.Services.AddHttpContextAccessor();
 
 
 
@@ -80,6 +84,8 @@ var app = builder.Build();
 // ✅ 5. Middleware pipeline (order matters!)
 app.UseSwagger();
 app.UseSwaggerUI();
+//app.UseMiddleware<JwtValidationMiddleware>();
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
