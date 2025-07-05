@@ -231,9 +231,9 @@ namespace VidyasetuAPI.Controllers
                     RequestId = RequestId,
                     QuestionJson = JsonSerializer.Serialize(parsed?.Questions),
                     FlashcardJson = JsonSerializer.Serialize(parsed?.Flashcards),
-                    SummaryJson = JsonSerializer.Serialize(parsed?.Summary),
+                    SummaryJson = parsed?.Summary,
                     RecommendationsJson = JsonSerializer.Serialize(parsed?.Recommendations),
-                    Title = JsonSerializer.Serialize(parsed?.Title)
+                    Title = parsed?.Title
                 };
 
                 _db.UserRequestResponses.Add(responseEntity);
