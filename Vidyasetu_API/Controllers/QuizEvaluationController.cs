@@ -114,6 +114,14 @@ namespace Vidyasetu_API.Controllers
             };
             var logdeviceRequest = await _db.DeviceLogDetails
             .FirstOrDefaultAsync(x => x.Id == userResponse.RequestId);
+
+            string videoUrl = string.Empty;
+
+            if (logdeviceRequest!.SourceTypeId == (int)SourceType.Youtube)
+            {
+                videoUrl = logdeviceRequest.RequestUrl ?? string.Empty;
+            }
+
             var response = new QuizEvaluationResponse
             {
                 TotalQuestions = total,
@@ -129,7 +137,7 @@ namespace Vidyasetu_API.Controllers
                 Summary = userResponse.SummaryJson ?? string.Empty,
                 IncorrectQuestions = incorrectList,
                 CorrectQuestions = correctList,
-                VideoUrl = logdeviceRequest?.RequestUrl ?? string.Empty,
+                VideoUrl = videoUrl,
                 Recommendations = userResponse.RecommendationsJson != null
                     ? JsonSerializer.Deserialize<List<Recommendation>>(userResponse.RecommendationsJson, new JsonSerializerOptions
                     {
