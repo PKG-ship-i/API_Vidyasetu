@@ -132,7 +132,10 @@ namespace Vidyasetu_API.Controllers
                 Medal = medal,
                 Title = userResponse.Title ?? string.Empty,
                 Flashcards = userResponse.FlashcardJson != null
-                    ? JsonSerializer.Deserialize<List<Flashcard>>(userResponse.FlashcardJson)
+                    ? JsonSerializer.Deserialize<List<Flashcard>>(userResponse.FlashcardJson, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    })
                     : new List<Flashcard>(),
                 Summary = userResponse.SummaryJson ?? string.Empty,
                 IncorrectQuestions = incorrectList,
