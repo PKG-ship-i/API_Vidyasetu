@@ -52,16 +52,16 @@ namespace VidyasetuAPI.Controllers
                     return BadRequest(ApiResponse<string>.CreateFailure("Only YouTube source is supported", 400));
 
 
-                // check for same existing Request
+                //// check for same existing Request
 
-                var checkExistingRequest = await _helperService.IsRequestExist(
-                    dto.NumberOfQuestions,
-                    dto.SourceTypeId,
-                    dto.DifficultyTypeId,
-                    dto.QuestionsTypeId,
-                    dto.VideoUrl);
-                if (checkExistingRequest == null)
-                {
+                //var checkExistingRequest = await _helperService.IsRequestExist(
+                //    dto.NumberOfQuestions,
+                //    dto.SourceTypeId,
+                //    dto.DifficultyTypeId,
+                //    dto.QuestionsTypeId,
+                //    dto.VideoUrl);
+                //if (checkExistingRequest == null)
+                //{
                     var addedLog = await _helperService.AddNewDevicelog(new DeviceLogDetail
                     {
                         DeviceId = dto.DeviceId,
@@ -115,9 +115,9 @@ namespace VidyasetuAPI.Controllers
 
                     return StatusCode(500, ApiResponse<string>.CreateFailure("Irrelvant content or server error"));
 
-                }
+                //}
 
-                return StatusCode(300, ApiResponse<GeneratedQuestionResponse>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
+                //return StatusCode(300, ApiResponse<GeneratedQuestionResponse>.CreateSuccess(checkExistingRequest, "Found existing questionnaire and regenerated successfully"));
             }
             catch (Exception ex)
             {
