@@ -28,19 +28,13 @@ namespace Vidyasetu_API.Controllers
 
 
 
-
-
-           
-
             var userQuizeReponses = await _db.UserQuizeReponses.Where(x => x.RequestId == Convert.ToInt64(decodeToken.requestId)).ToListAsync();
 
 
-            if (userQuizeReponses.Count > 0)
+            if (userQuizeReponses.Count < 0)
             {
           
-            }
-            else
-            {
+           
                 var userQuizeReponse = request.Answers
                     .Select(x => new UserQuizeReponse
                     {
@@ -55,9 +49,25 @@ namespace Vidyasetu_API.Controllers
             }
 
 
-
-
             var userResponse = await _db.UserRequestResponses.FirstOrDefaultAsync(x => x.Id == Convert.ToInt64(decodeToken.requestId));
+
+            if (request.Answers == null)
+            {
+
+                foreach (var item in userQuizeReponses)
+                {
+
+                    var answer = new UserAnswerModel
+                    {
+                        QuestionText = item.Question,
+                        GivenAnswer = item.UserAnswer
+                    };
+
+                    request.Answers!.Add(answer);
+                }
+
+            }
+
 
             if (userResponse == null || string.IsNullOrWhiteSpace(userResponse.QuestionJson))
             {
