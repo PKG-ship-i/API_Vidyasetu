@@ -26,33 +26,33 @@ namespace Vidyasetu_API.Controllers
             // Fetch question JSON from DB
             var decodeToken = EncryptDecryptHelper.Decrypt(request.token);
 
-           // var userQuizeReponses = await _db.UserQuizeReponses.Where(x => x.RequestId == Convert.ToInt64(decodeToken.requestId)).ToListAsync();
 
 
-            //if (userQuizeReponses.Count > 0)
-            //{
-            //    request.Answers = userQuizeReponses
-            //        .Select(x => new UserAnswerModel
-            //        {
-            //            QuestionText = x.Question,
-            //            GivenAnswer = x.UserAnswer
-            //        })
-            //        .ToList();
-            //}
-            //else
-            //{
-            //    var userQuizeReponse = request.Answers
-            //        .Select(x => new UserQuizeReponse
-            //        {
-            //            RequestId = Convert.ToInt64(decodeToken.requestId),
-            //            Question = x.QuestionText,
-            //            UserAnswer = x.GivenAnswer
-            //        })
-            //        .ToList();
 
-            //    await _db.AddRangeAsync(userQuizeReponse);
-            //    await _db.SaveChangesAsync();
-            //}
+
+           
+
+            var userQuizeReponses = await _db.UserQuizeReponses.Where(x => x.RequestId == Convert.ToInt64(decodeToken.requestId)).ToListAsync();
+
+
+            if (userQuizeReponses.Count > 0)
+            {
+          
+            }
+            else
+            {
+                var userQuizeReponse = request.Answers
+                    .Select(x => new UserQuizeReponse
+                    {
+                        RequestId = Convert.ToInt64(decodeToken.requestId),
+                        Question = x.QuestionText,
+                        UserAnswer = x.GivenAnswer
+                    })
+                    .ToList();
+
+                await _db.AddRangeAsync(userQuizeReponse);
+                await _db.SaveChangesAsync();
+            }
 
 
 
